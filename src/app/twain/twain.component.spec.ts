@@ -4,6 +4,7 @@ import { Observable, of, throwError, interval } from 'rxjs';
 import { TwainService } from './twain.service';
 import { delay, take, last } from 'rxjs/operators';
 import { asyncData } from '../shared/help';
+import {cold, getTestScheduler} from 'jasmine-marbles';
 
 class TwainServiceStub{
     getQuote(): Observable<string>{
@@ -85,6 +86,20 @@ fdescribe("twain component",()=>{
             expect(errorMessage()).toBeNull("should not show error");
             done();
         })
+    });
+    it("should show quote after getQuote (marbles)",()=>{
+        //observables test quote value and complete(), after delay
+
+        const q$ = cold('---x|',{x: testQuote});
+        getQuoteSpy.and.returnValue(q$);
+        fixture.detectChanges();//ngOninit
+        expect(quoteEl.textContent).toBe("...","should show place holder");
+        //flush the observables
+        getTestScheduler().flush();
+        //update the view
+        fixture.detectChanges();
+        expect(quoteEl.textContent).toBe(testQuote,"should show quote");
+        expect(errorMessage()).toBeNull("should not show error");
     })
 
     it("should display error when TwainService fails", fakeAsync(()=>{
