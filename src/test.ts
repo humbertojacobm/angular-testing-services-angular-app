@@ -1,11 +1,12 @@
 // This file is required by karma.conf.js and loads recursively all the .spec and framework files
-
+(window as any)['__zone_symbol__fakeAsyncPatchLock'] = true;
 import 'zone.js/dist/zone-testing';
 import { getTestBed } from '@angular/core/testing';
 import {
   BrowserDynamicTestingModule,
   platformBrowserDynamicTesting
 } from '@angular/platform-browser-dynamic/testing';
+import 'zone.js/dist/zone-patch-rxjs-fake-async';
 
 declare const require: {
   context(path: string, deep?: boolean, filter?: RegExp): {
