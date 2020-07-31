@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, fakeAsync, tick, async } from "@angular/core
 import {TwainComponent} from "./twain.component"
 import { Observable, of, throwError, interval } from 'rxjs';
 import { TwainService } from './twain.service';
-import { delay, take } from 'rxjs/operators';
+import { delay, take, last } from 'rxjs/operators';
 import { asyncData } from '../shared/help';
 
 class TwainServiceStub{
@@ -68,6 +68,25 @@ fdescribe("twain component",()=>{
              expect(errorMessage()).toBeNull("should not show error");
          })
     }));
+    it("should show last quote (quote done)",(done: DoneFn)=>{
+        fixture.detectChanges();
+        comp.quote.pipe(last()).subscribe(()=>{
+          fixture.detectChanges();
+          expect(quoteEl.textContent).toBe(testQuote);
+          expect(errorMessage()).toBeNull('should not show error');
+          done();
+        });
+    })
+    it("should show quote after getQuote (spy done)", (done: DoneFn)=>{
+        fixture.detectChanges();
+        getQuoteSpy.calls.mostRecent().returnValue.subscribe(()=>{
+            fixture.detectChanges();
+            expect(quoteEl.textContent).toBe(testQuote);
+            expect(errorMessage()).toBeNull("should not show error");
+            done();
+        })
+    })
+
     it("should display error when TwainService fails", fakeAsync(()=>{
        getQuoteSpy.and.returnValue(
            throwError('TwainService test failure')
