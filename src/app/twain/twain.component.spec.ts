@@ -1,9 +1,9 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from "@angular/core/testing";
+import { ComponentFixture, TestBed, fakeAsync, tick, async } from "@angular/core/testing";
 import {TwainComponent} from "./twain.component"
 import { Observable, of, throwError, interval } from 'rxjs';
 import { TwainService } from './twain.service';
 import { delay, take } from 'rxjs/operators';
-import { asyncData } from '../model/hero.service.spec';
+import { asyncData } from '../shared/help';
 
 class TwainServiceStub{
     getQuote(): Observable<string>{
@@ -55,6 +55,18 @@ fdescribe("twain component",()=>{
         fixture.detectChanges();
         expect(quoteEl.textContent).toBe(testQuote);
         expect(getQuoteSpy.calls.any()).toBe(true,'getQuote called');
+    }));
+    it("should show quote after getQuote (async)", async(()=>{
+         //ngOninit
+         fixture.detectChanges();
+         expect(quoteEl.textContent).toBe("...");
+         //wait for async getQuotes
+         fixture.whenStable().then(()=>{
+             //update view with Quotes
+             fixture.detectChanges();
+             expect(quoteEl.textContent).toBe(testQuote);
+             expect(errorMessage()).toBeNull("should not show error");
+         })
     }));
     it("should display error when TwainService fails", fakeAsync(()=>{
        getQuoteSpy.and.returnValue(
