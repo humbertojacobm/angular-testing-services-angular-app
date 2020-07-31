@@ -102,6 +102,26 @@ fdescribe("twain component",()=>{
         expect(errorMessage()).toBeNull("should not show error");
     })
 
+    it("sholud display error when TwainService fails", fakeAsync(()=>{
+        //observable error after delay
+        const q$ = cold('---#|',null,new Error('TwainService test failure'));
+        getQuoteSpy.and.returnValue(q$);
+
+        //ngOninit and first refresh of view
+        fixture.detectChanges();
+        expect(quoteEl.textContent).toBe("...","should be placeholder");
+        
+        //emit the observables
+        getTestScheduler().flush();
+        //wait for the setTimeOut
+        tick();
+        //update the view again
+        fixture.detectChanges();
+        expect(quoteEl.textContent).toBe("...","should be placeholder");
+        expect(errorMessage()).toMatch(/test failure/i,"should show the error message")
+
+    }))
+
     it("should display error when TwainService fails", fakeAsync(()=>{
        getQuoteSpy.and.returnValue(
            throwError('TwainService test failure')
