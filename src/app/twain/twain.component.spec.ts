@@ -3,6 +3,8 @@ import {TwainComponent} from "./twain.component"
 import { Observable, of, throwError, interval } from 'rxjs';
 import { TwainService } from './twain.service';
 import { delay, take } from 'rxjs/operators';
+import { asyncData } from '../model/hero.service.spec';
+
 class TwainServiceStub{
     getQuote(): Observable<string>{
         return of("value");
@@ -28,7 +30,7 @@ fdescribe("twain component",()=>{
         testQuote = 'Test Quote';
         //mocking.
         const twainService = jasmine.createSpyObj('TwainService',['getQuote']);
-        getQuoteSpy= twainService.getQuote.and.returnValue(of(testQuote));
+        getQuoteSpy= twainService.getQuote.and.returnValue(asyncData(testQuote));
 
         TestBed.configureTestingModule({
            declarations: [TwainComponent],
@@ -47,11 +49,13 @@ fdescribe("twain component",()=>{
         fixture.detectChanges();//ngOnInit
         expect(comp).toBeTruthy();
     });
-    it("should show quote after component initialized",()=>{
-        fixture.detectChanges();//ngOnInit
+    it("should show quote after component initialized",fakeAsync(()=>{
+        fixture.detectChanges();//ngOnInit        
+        tick();//resolver todos los request asincronos pendientes inclusive los que estan mockeados.
+        fixture.detectChanges();
         expect(quoteEl.textContent).toBe(testQuote);
         expect(getQuoteSpy.calls.any()).toBe(true,'getQuote called');
-    });
+    }));
     it("should display error when TwainService fails", fakeAsync(()=>{
        getQuoteSpy.and.returnValue(
            throwError('TwainService test failure')
