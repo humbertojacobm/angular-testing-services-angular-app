@@ -1,22 +1,23 @@
-// import { TestBed, async } from '@angular/core/testing';
-// import { RouterTestingModule } from '@angular/router/testing';
-// import { AppComponent } from './app.component';
+import { TestBed } from "@angular/core/testing"
+import { NO_ERRORS_SCHEMA, Component } from '@angular/core'
 
-// describe('AppComponent', () => {
-//   beforeEach(async(() => {
-//     TestBed.configureTestingModule({
-//       imports: [
-//         RouterTestingModule
-//       ],
-//       declarations: [
-//         AppComponent
-//       ],
-//     }).compileComponents();
-//   }));
+import {AppComponent} from './app.component'
+import { RouterLinkDirectiveStub} from './testing/router-link-directive-stub'
 
-//   it('should create the app', () => {
-//     const fixture = TestBed.createComponent(AppComponent);
-//     const app = fixture.componentInstance;
-//     expect(app).toBeTruthy();
-//   });
-// });
+@Component({
+    selector:'app-banner',template:''
+})
+class BannerStubComponent{}
+
+fdescribe("app component block",()=>{
+    beforeEach(()=>{
+        TestBed.configureTestingModule({
+            declarations: [
+                AppComponent,
+                BannerStubComponent,
+                RouterLinkDirectiveStub
+            ],
+            schemas: [NO_ERRORS_SCHEMA]
+        })
+    })
+})
