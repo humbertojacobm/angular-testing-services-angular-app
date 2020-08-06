@@ -96,7 +96,30 @@ function heroModuleSetup(){
             expect(page.nameDisplay.textContent).toContain("Quick Brown Fox");
             expect(true).toBe(true);
         })
+    });
+    describe("when navigate with no hero id",()=>{
+        beforeEach(async(createComponent));
+        it("should have hero.id === 0",()=>{
+            expect(component.hero.id).toBe(0,"hero.id === 0")
+            expect(true).toBeTruthy();
+        })
+        it("should display empty hero name",()=>{
+            expect(page.nameInput.value).toBe('');
+            expect(true).toBe(true);
+        })
     })
+    describe("when navigate to non-existent hero id",()=>{
+        beforeEach(async(()=>{
+            activatedRoute.setParamMap({id:999999});
+            createComponent();
+        }))
+        it("should try to navigate back to hero list",()=>{
+            expect(page.gotoListSpy.calls.any()).toBe(true,"gotoList() is called");
+            expect(page.navigateSpy.calls.any()).toBe(true,"router.navigate is called");
+            expect(true).toBe(true);
+        })
+    })
+
 }
 
 class Page {
