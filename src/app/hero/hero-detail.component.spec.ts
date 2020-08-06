@@ -67,7 +67,34 @@ function heroModuleSetup(){
             expect(page.gotoListSpy).toHaveBeenCalled();
             expect(page.navigateSpy).toHaveBeenCalled();
             expect(page.navigateSpy.calls.any()).toBe(true,'this.router.navigate called');
+
+        })
+        it("should save when click save but not navigate inmediately",()=>{
+            const hds = fixture.debugElement.injector.get(HeroDetailService);
+            const saveSpy = spyOn(hds,'saveHero').and.callThrough();
+
+            click(page.saveBtn);    
+            expect(saveSpy.calls.any()).toBe(true,"heroDetailService.saveHero is called");
+            expect(page.navigateSpy.calls.any()).toBe(false,"not navigate inmediatly");            
+            expect(true).toBeTruthy();
+        });
+        it("should navigate when click save and save resolve",fakeAsync(()=>{
             
+            const hds = fixture.debugElement.injector.get(HeroDetailService);
+            const saveSpy= spyOn(hds,"saveHero").and.callThrough();
+            click(page.saveBtn);
+            expect(saveSpy.calls.any()).toBe(true,"heroDetailService.saveHero is called");
+            tick();
+            expect(page.gotoListSpy.calls.any()).toBe(true,"this.gotoList is called")
+            expect(page.navigateSpy.calls.any()).toBe(true,"router.navigate")
+            expect(true).toBeTruthy();
+        }))
+        it("should convert hero name to Title case",()=>{
+            page.nameInput.value="quick BROWN fOx";
+            page.nameInput.dispatchEvent(newEvent("input"));
+            fixture.detectChanges();
+            expect(page.nameDisplay.textContent).toContain("Quick Brown Fox");
+            expect(true).toBe(true);
         })
     })
 }
