@@ -21,6 +21,10 @@ import {HeroDetailComponent} from './hero-detail.component'
 import { HeroDetailService } from './hero-detail.service';
 import { HeroModule} from './hero.module'
 import { HeroService, TestHeroService, getTestHeroes } from '../model/testing';
+import { FormsModule } from '@angular/forms';
+import { TitleCasePipe } from '@angular/common';
+import { first } from 'rxjs/operators';
+import { SharedModule } from '../shared/shared.module';
 
 ///////testing vars//////
 let activatedRoute: ActivatedRouteStub;
@@ -36,6 +40,8 @@ fdescribe("HeroDetailComponent",()=>{
 
     describe("with HeroModule setup", heroModuleSetup);
     describe("when override its provided HeroDetailService", overrideSetup);
+    describe("with FormsModule setup", formsModuleSetup);
+    describe("with ShareModule setup", sharedModuleSetup)
 })
 ///////
 
@@ -44,12 +50,12 @@ function overrideSetup(){
         testHero: Hero = {id: 42, name: 'Test Hero'}
         getHero = jasmine.createSpy('getHero').and.callFake(
             ()=> {
-                asyncData(Object.assign({},this.testHero));
+                return asyncData(Object.assign({},this.testHero));
             }
         );
         saveHero = jasmine.createSpy('saveHero').and.callFake(
            (hero: Hero)=>{
-               asyncData(Object.assign(this.testHero, hero));
+               return asyncData(Object.assign(this.testHero, hero));
            }
         );
     }
@@ -58,10 +64,78 @@ function overrideSetup(){
         activatedRoute.setParamMap({id:999999});
     });
 
-    beforeEach(async(()=>{
+    beforeEach(async(() => {
         const routerSpy = createRouterSpy();
-        
+    
+        TestBed.configureTestingModule({
+          imports:   [ HeroModule ],
+          providers: [
+            { provide: ActivatedRoute, useValue: activatedRoute },
+            { provide: Router,         useValue: routerSpy},
+            // HeroDetailService at this level is IRRELEVANT!
+            { provide: HeroDetailService, useValue: {} }
+          ]
+        })
+    
+        // Override component's own provider
+        .overrideComponent(HeroDetailComponent, {
+          set: {
+            providers: [
+              { provide: HeroDetailService, useClass: HeroDetailServiceSpy }
+            ]
+          }
+        })
+    
+        .compileComponents();
+      }));
+
+    let hdsSpy: HeroDetailServiceSpy;
+
+    beforeEach(async(() => {
+        createComponent();
+        // get the component's injected HeroDetailServiceSpy
+        hdsSpy = fixture.debugElement.injector.get(HeroDetailService) as any;
+      }));
+
+    it('should have called `getHero`', () => {
+        expect(hdsSpy.getHero.calls.count()).toBe(1, 'getHero called once');
+    });
+
+    it("it should display stub hero's name", ()=>{
+        expect(page.nameDisplay.textContent).toContain(hdsSpy.testHero.name);
+    })
+    it("should have stub hero change",fakeAsync(()=>{
+       click(page.saveBtn);
+       tick();
+       expect(hdsSpy.saveHero.calls.count()).toBe(1,"saveHero was called");
     }))
+
+    it('should save stub hero change v2', fakeAsync(()=>{
+        const origName = hdsSpy.testHero.name;
+        const newName = "New Name";
+
+        page.nameInput.value = newName;
+        page.nameInput.dispatchEvent(newEvent('input'));
+
+        expect(component.hero.name).toBe(newName,"the component is getting the new name");
+        expect(hdsSpy.testHero.name).toBe(origName,"spy service should have the previos name");
+
+        click(page.saveBtn);
+        expect(hdsSpy.saveHero.calls.count()).toBe(1,"the hdsSpy.saveHero should be called ");
+
+        tick();
+        expect(hdsSpy.testHero.name).toBe(newName,"spy service should have the new name");
+        expect(page.navigateSpy.calls.count()).toBe(1,"router.navigate should be called");
+
+    }))
+
+    it('fixture injected service is not the component injected service',()=>{
+        inject([HeroDetailService],(fixtureService: HeroDetailService) =>{
+            const componentService = fixture.debugElement.injector.get(HeroDetailService);
+            expect(fixtureService).not.toBe(componentService,"the injected service is not the same that component service");
+        })
+    })
+
 
 }
 
@@ -164,6 +238,65 @@ function heroModuleSetup(){
 
     })
 
+}
+
+function formsModuleSetup(){
+    beforeEach(async(()=>{
+        const routerSpy = createRouterSpy();
+        TestBed.configureTestingModule({
+            imports: [FormsModule],
+            declarations: [HeroDetailComponent, TitleCasePipe],
+            providers:[
+                {
+                    provide: ActivatedRoute, useValue: activatedRoute
+                },
+                {
+                    provide: HeroService,    useClass: TestHeroService
+                },
+                {
+                    provide: Router,         useValue: routerSpy
+                }
+            ]
+        })
+        .compileComponents();
+    }))
+    it('should display 1st hero\'s name', async(() => {
+        const expectedHero = firstHero;
+        activatedRoute.setParamMap({ id: expectedHero.id });
+        createComponent().then(() => {
+          expect(page.nameDisplay.textContent).toBe(expectedHero.name);
+        });
+      }));
+}
+
+function sharedModuleSetup(){
+    beforeEach(async(()=>{
+        const routerSpy = createRouterSpy();
+        TestBed.configureTestingModule({
+            imports: [SharedModule],
+            declarations: [HeroDetailComponent],
+            providers: [
+                {
+                    provide: ActivatedRoute, useValue: activatedRoute
+                },
+                {
+                    provide: HeroService, useClass: TestHeroService
+                },
+                {
+                    provide: Router, useValue: routerSpy
+                }
+            ]
+        })
+        .compileComponents();
+    }))
+    it("should display hero name", async(()=>{
+        const expectedHero = firstHero;
+        activatedRoute.setParamMap({id: expectedHero.id});
+        createComponent().then(()=>{
+           expect(page.nameDisplay.textContent).toBe(expectedHero.name, "should the same")
+        })
+
+    }))
 }
 
 class Page {
