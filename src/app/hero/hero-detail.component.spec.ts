@@ -35,8 +35,37 @@ fdescribe("HeroDetailComponent",()=>{
     });
 
     describe("with HeroModule setup", heroModuleSetup);
+    describe("when override its provided HeroDetailService", overrideSetup);
 })
+///////
 
+function overrideSetup(){
+    class HeroDetailServiceSpy{
+        testHero: Hero = {id: 42, name: 'Test Hero'}
+        getHero = jasmine.createSpy('getHero').and.callFake(
+            ()=> {
+                asyncData(Object.assign({},this.testHero));
+            }
+        );
+        saveHero = jasmine.createSpy('saveHero').and.callFake(
+           (hero: Hero)=>{
+               asyncData(Object.assign(this.testHero, hero));
+           }
+        );
+    }
+
+    beforeEach(()=>{
+        activatedRoute.setParamMap({id:999999});
+    });
+
+    beforeEach(async(()=>{
+        const routerSpy = createRouterSpy();
+        
+    }))
+
+}
+
+/////////
 const firstHero = getTestHeroes()[0];
 
 function heroModuleSetup(){
@@ -118,6 +147,21 @@ function heroModuleSetup(){
             expect(page.navigateSpy.calls.any()).toBe(true,"router.navigate is called");
             expect(true).toBe(true);
         })
+    })
+    //why we must use `fixture.debugElement.injector` in `Page()`
+    it("cannot use `inject` to get component\'s provided HeroDetailService",()=>{
+        let service: HeroDetailService;
+        
+        expect(
+            inject([HeroDetailService],(hds: HeroDetailService) => service = hds)
+        ).toThrowError(/No provider for HeroDetailService/);
+        
+        //get 'HeroDetailSErvice' with component's own injector
+        fixture = TestBed.createComponent(HeroDetailComponent);
+        service = fixture.debugElement.injector.get(HeroDetailService);
+        expect(service).toBeDefined("debugElement.injector");
+        
+
     })
 
 }
