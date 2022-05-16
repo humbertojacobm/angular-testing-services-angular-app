@@ -83,7 +83,7 @@
             "main": "src/test.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
-            "karmaConfig": "karma.conf.js",
+            "karmaConfig": "karma.conf.js",            
             "assets": [
               "src/favicon.ico",
               "src/assets"
@@ -122,5 +122,8 @@
       }
     }
   },
-  "defaultProject": "angular.io-example"
+  "defaultProject": "angular.io-example",
+  "cli": {
+    "analytics": "970e0576-647f-4c57-9a1f-96540d2b3cbf"
+  }
 }

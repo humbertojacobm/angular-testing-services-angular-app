@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
-import { Observable } from 'rxjs';
-import { asyncData } from '../../../testing';
+import { Observable, defer } from 'rxjs';
+// import { asyncData } from '../../../testing';
 
 import { map } from 'rxjs/operators';
 
@@ -13,6 +13,10 @@ export { getTestHeroes } from './test-heroes';
 import { Hero }          from '../hero';
 import { HeroService }   from '../hero.service';
 import { getTestHeroes } from './test-heroes';
+
+export function asyncData<T>(data: T) {
+  return defer(() => Promise.resolve(data));
+}
 
 @Injectable()
 /**

@@ -77,7 +77,7 @@ export class HeroService {
    */
   private handleError<T>(operation = 'operation') {
     return (error: HttpErrorResponse): Observable<T> => {
-
+       
       // TODO: send the error to remote logging infrastructure
       console.error(error); // log to console instead
 
